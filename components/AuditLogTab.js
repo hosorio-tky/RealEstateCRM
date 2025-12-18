@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Timeline, Typography, Tag, Card, Spin, Empty } from 'react-redux'; // Wait, standard Next.js project uses Ant Design directly
+import { Timeline, Typography, Tag, Card, Spin, Empty } from 'antd';
 import { AuditService } from '@/services/AuditService';
 import dayjs from 'dayjs';
 import {
