@@ -77,20 +77,29 @@ const ContactsPage = () => {
 
     return (
         <DashboardLayout>
-            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                    <h2>Contacts</h2>
-                    <p>Directory of all people in the CRM.</p>
+            <div style={{
+                marginBottom: 16,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                        <h2 style={{ fontSize: 'clamp(1.2rem, 5vw, 2rem)', margin: 0 }}>Contacts</h2>
+                        <p style={{ color: '#666', fontSize: '14px' }}>Directory of all people in the CRM.</p>
+                    </div>
+                    {/* <Button type="primary" icon={<UserAddOutlined />} onClick={handleAdd}>Add</Button> */}
                 </div>
-                {/* <Button type="primary" icon={<UserAddOutlined />} onClick={handleAdd}>Add Contact</Button> */}
             </div>
-            <Card>
+            <Card bodyStyle={{ padding: 0 }}>
                 <Table
                     columns={columns}
                     dataSource={data}
                     rowKey="id"
                     loading={loading}
-                    pagination={{ pageSize: 10 }}
+                    pagination={{ pageSize: 10, size: 'small' }}
+                    scroll={{ x: 600 }}
+                    size="small"
                 />
             </Card>
 

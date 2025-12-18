@@ -70,25 +70,42 @@ const SortableItem = ({ id, item }) => {
 
 const Column = ({ id, items }) => {
     const { setNodeRef } = useSortable({ id });
+    const screens = useBreakpoint();
+    const isMobile = !screens.md;
 
     return (
         <div
             ref={setNodeRef}
             style={{
-                flex: '0 0 260px',
+                flex: isMobile ? '0 0 85vw' : '0 0 280px',
                 backgroundColor: '#f0f2f5',
                 borderRadius: '8px',
-                padding: '12px',
-                marginRight: '16px',
+                padding: isMobile ? '8px' : '12px',
+                marginRight: '12px',
                 display: 'flex',
                 flexDirection: 'column',
+                maxHeight: isMobile ? 'calc(100vh - 200px)' : 'auto',
             }}
         >
-            <div style={{ marginBottom: '12px', fontWeight: 'bold', textTransform: 'uppercase', color: '#595959' }}>
-                {id} <Tag>{items.length}</Tag>
+            <div style={{
+                marginBottom: '12px',
+                fontWeight: 'bold',
+                textTransform: 'uppercase',
+                color: '#595959',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+            }}>
+                <Text strong style={{ fontSize: isMobile ? '12px' : '14px' }}>{id}</Text>
+                <Tag style={{ margin: 0 }}>{items.length}</Tag>
             </div>
             <SortableContext id={id} items={items} strategy={verticalListSortingStrategy}>
-                <div style={{ flex: 1, minHeight: '100px' }}>
+                <div style={{
+                    flex: 1,
+                    minHeight: '100px',
+                    overflowY: 'auto',
+                    paddingRight: '4px'
+                }}>
                     {items.map((item) => (
                         <SortableItem key={item.id} id={item.id} item={item} />
                     ))}

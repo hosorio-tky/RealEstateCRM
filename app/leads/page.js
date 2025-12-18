@@ -150,20 +150,29 @@ const LeadsPage = () => {
 
     return (
         <DashboardLayout>
-            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                    <h2>My Opportunities</h2>
-                    <p>This list shows only opportunities assigned to you (secured by RLS).</p>
+            <div style={{
+                marginBottom: 16,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+            }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                        <h2 style={{ fontSize: 'clamp(1.2rem, 5vw, 2rem)', margin: 0 }}>My Opportunities</h2>
+                        <p style={{ color: '#666', fontSize: '14px' }}>Deals assigned to you.</p>
+                    </div>
+                    <Button type="primary" onClick={handleAdd}>Add</Button>
                 </div>
-                <Button type="primary" onClick={handleAdd}>Add Opportunity</Button>
             </div>
-            <Card>
+            <Card bodyStyle={{ padding: 0 }}>
                 <Table
                     columns={columns}
                     dataSource={data}
                     rowKey="id"
                     loading={loading}
-                    pagination={{ pageSize: 10 }}
+                    pagination={{ pageSize: 10, size: 'small' }}
+                    scroll={{ x: 800 }}
+                    size="small"
                 />
             </Card>
 

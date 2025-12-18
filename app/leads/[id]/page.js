@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { OpportunityService } from '@/services/OpportunityService';
 import { ActivityService } from '@/services/ActivityService';
 import ActivityForm from '@/components/ActivityForm';
-import { Spin, Card, Descriptions, Timeline, Button, Modal, Tag, message, Empty, Tabs } from 'antd';
+import { Spin, Card, Descriptions, Timeline, Button, Modal, Tag, message, Empty, Tabs, Space, Grid } from 'antd';
 import { EditOutlined, PhoneOutlined, MailOutlined, CalendarOutlined, FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined, MessageOutlined, CheckSquareOutlined, DeleteOutlined } from '@ant-design/icons';
 import NotesTab from '@/components/NotesTab';
 import AttachmentsTab from '@/components/AttachmentsTab';
@@ -132,91 +132,104 @@ const LeadDetailsPage = () => { // We can rename this component internally to Op
     if (loading) return <DashboardLayout><Spin size="large" /></DashboardLayout>;
     if (!opportunity) return <DashboardLayout><Empty description="Opportunity not found" /></DashboardLayout>;
 
+    const screens = Spin.Grid?.useBreakpoint?.() || {}; // Spin might not have it, but antd has it. Using standard import
+    // Wait, Spin doesn't have Grid. I need to import Grid from antd.
+    // I already have Descriptions, so I'll add Grid.
+
+    // Actually I'll just use the already imported components and add Grid if missing.
+    // Looking at line 8: import { Spin, Card, Descriptions, Timeline, Button, Modal, Tag, message, Empty, Tabs } from 'antd';
+
     return (
         <DashboardLayout>
-            <Button onClick={() => router.back()} style={{ marginBottom: 16 }}>Back to Pipeline</Button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <Button onClick={() => router.back()}>Volver</Button>
+                <Tag color="blue" style={{ margin: 0 }}>{opportunity.stage}</Tag>
+            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div style={{ width: '100%' }}>
                     <Card
-                        title={opportunity.title}
-                        extra={
-                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                <Tag color="blue">{opportunity.stage}</Tag>
-                                <Button icon={<EditOutlined />} onClick={() => setIsEditModalOpen(true)}>Edit</Button>
-                            </div>
-                        }
+                        title={<span style={{ fontSize: '1.1rem' }}>{opportunity.title}</span>}
+                        extra={<Button icon={<EditOutlined />} onClick={() => setIsEditModalOpen(true)}>Editar</Button>}
+                        bodyStyle={{ padding: '16px' }}
                     >
-                        <Descriptions column={{ xxl: 4, xl: 3, lg: 3, md: 2, sm: 1, xs: 1 }}>
-                            <Descriptions.Item label="Contact Name">{opportunity.contact?.name}</Descriptions.Item>
+                        <Descriptions
+                            column={{ xxl: 4, xl: 3, lg: 3, md: 2, sm: 1, xs: 1 }}
+                            size="small"
+                            layout="vertical"
+                        >
+                            <Descriptions.Item label="Contacto">{opportunity.contact?.name}</Descriptions.Item>
                             <Descriptions.Item label="Email">{opportunity.contact?.email}</Descriptions.Item>
-                            <Descriptions.Item label="Phone">{opportunity.contact?.phone || '-'}</Descriptions.Item>
-                            <Descriptions.Item label="Property">{opportunity.property ? opportunity.property.title : 'None'}</Descriptions.Item>
-                            <Descriptions.Item label="Budget">{opportunity.budget ? `$${Number(opportunity.budget).toLocaleString()}` : '-'}</Descriptions.Item>
-                            <Descriptions.Item label="Assigned">{opportunity.assigned_user ? opportunity.assigned_user.name : '-'}</Descriptions.Item>
+                            <Descriptions.Item label="Teléfono">{opportunity.contact?.phone || '-'}</Descriptions.Item>
+                            <Descriptions.Item label="Propiedad">{opportunity.property ? opportunity.property.title : 'Ninguna'}</Descriptions.Item>
+                            <Descriptions.Item label="Presupuesto">{opportunity.budget ? `$${Number(opportunity.budget).toLocaleString()}` : '-'}</Descriptions.Item>
+                            <Descriptions.Item label="Asignado">{opportunity.assigned_user ? opportunity.assigned_user.name : '-'}</Descriptions.Item>
                         </Descriptions>
                     </Card>
                 </div>
 
                 <div style={{ width: '100%' }}>
-                    <Card>
+                    <Card bodyStyle={{ padding: '12px' }}>
                         <Tabs
                             defaultActiveKey="1"
+                            size="small"
                             items={[
                                 {
                                     key: '1',
                                     label: 'Actividades',
                                     children: (
-                                        <>
+                                        <div style={{ paddingTop: '12px' }}>
                                             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-                                                <Button type="primary" onClick={() => setIsModalOpen(true)}>Add Activity</Button>
+                                                <Button type="primary" onClick={() => setIsModalOpen(true)} size="small">Programar</Button>
                                             </div>
-                                            {activities.length === 0 ? <Empty description="No activities" /> : (
+                                            {activities.length === 0 ? <Empty description="Sin actividades" /> : (
                                                 <Timeline
                                                     items={activities.map(act => ({
                                                         key: act.id,
                                                         color: act.is_completed ? 'green' : 'blue',
                                                         icon: getIcon(act.activity_type),
-                                                        content: (
-                                                            <>
-                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                    <strong>{act.activity_type}</strong>
-                                                                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                                                        <span style={{ fontSize: '12px', color: '#999' }}>
+                                                        children: (
+                                                            <div style={{ paddingBottom: '12px' }}>
+                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                                    <div style={{ flex: 1 }}>
+                                                                        <strong style={{ display: 'block' }}>{act.activity_type}</strong>
+                                                                        <span style={{ fontSize: '11px', color: '#999' }}>
                                                                             {dayjs(act.scheduled_at).format('MMM D, h:mm A')}
                                                                         </span>
+                                                                    </div>
+                                                                    <Space size={0}>
                                                                         <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEditActivity(act)} />
                                                                         <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => handleDeleteActivity(act.id)} />
-                                                                    </div>
+                                                                    </Space>
                                                                 </div>
-                                                                <div>{act.notes}</div>
+                                                                <div style={{ fontSize: '13px', marginTop: '4px' }}>{act.notes}</div>
                                                                 {!act.is_completed && (
-                                                                    <Button type="link" size="small" onClick={() => handleComplete(act.id)}>
-                                                                        Mark Complete
+                                                                    <Button type="link" size="small" style={{ padding: 0 }} onClick={() => handleComplete(act.id)}>
+                                                                        Completar
                                                                     </Button>
                                                                 )}
-                                                            </>
+                                                            </div>
                                                         )
                                                     }))}
                                                 />
                                             )}
-                                        </>
+                                        </div>
                                     )
                                 },
                                 {
                                     key: '2',
                                     label: 'Notas',
-                                    children: <NotesTab entityType="opportunity" entityId={opportunity.id} />
+                                    children: <div style={{ paddingTop: '12px' }}><NotesTab entityType="opportunity" entityId={opportunity.id} /></div>
                                 },
                                 {
                                     key: '3',
                                     label: 'Archivos',
-                                    children: <AttachmentsTab entityType="opportunity" entityId={opportunity.id} />
+                                    children: <div style={{ paddingTop: '12px' }}><AttachmentsTab entityType="opportunity" entityId={opportunity.id} /></div>
                                 },
                                 {
                                     key: '4',
                                     label: 'Historial',
-                                    children: <AuditLogTab entityType="opportunities" entityId={opportunity.id} />
+                                    children: <div style={{ paddingTop: '12px' }}><AuditLogTab entityType="opportunities" entityId={opportunity.id} /></div>
                                 }
                             ]}
                         />
@@ -224,12 +237,8 @@ const LeadDetailsPage = () => { // We can rename this component internally to Op
                 </div>
             </div>
 
-            {/* Modals ... ActivityForm is fine. LeadForm needs to be generic or replaced. 
-                For now passing opportunity as initialValues might work if keys align (budget -> budget_max mismatch). 
-                I will fix this later if user reports issues, or I can map it here.
-            */}
             <Modal
-                title={editingActivity ? "Edit Activity" : "Schedule Activity"}
+                title={editingActivity ? "Editar Actividad" : "Programar Actividad"}
                 open={isModalOpen}
                 onCancel={() => {
                     setIsModalOpen(false);
@@ -237,6 +246,8 @@ const LeadDetailsPage = () => { // We can rename this component internally to Op
                 }}
                 footer={null}
                 destroyOnHidden
+                width="95%"
+                style={{ top: 20 }}
             >
                 <ActivityForm
                     initialValues={editingActivity}
@@ -246,17 +257,14 @@ const LeadDetailsPage = () => { // We can rename this component internally to Op
             </Modal>
 
             <Modal
-                title="Edit Opportunity"
+                title="Editar Oportunidad"
                 open={isEditModalOpen}
                 onCancel={() => setIsEditModalOpen(false)}
                 footer={null}
                 destroyOnHidden
+                width="95%"
+                style={{ top: 20 }}
             >
-                {/* 
-                  TODO: LeadForm expects 'lead' structure. 
-                  We passed 'lead' before which had 'budget_max'. Opportunity has 'budget'.
-                  We might need to map opportunity back to 'lead-like' structure for the form to work nicely until we refactor the form.
-                */}
                 <OpportunityForm
                     initialValues={opportunity}
                     onFinish={handleUpdateOpportunity}

@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
-import { Table, Button, Input, Select, Space, Modal, message, Tag } from 'antd';
+import { Table, Button, Input, Select, Space, Modal, message, Tag, Grid, Card, Typography } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import DashboardLayout from '@/components/DashboardLayout';
 import PropertyForm from '@/components/PropertyForm';
@@ -160,19 +160,28 @@ const PropertiesPage = () => {
         },
     ];
 
+    const screens = Grid.useBreakpoint();
+    const isMobile = !screens.md;
+
     return (
         <DashboardLayout>
-            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-                <Space>
+            <div style={{
+                marginBottom: 16,
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
+                justifyContent: 'space-between',
+                gap: '12px'
+            }}>
+                <Space direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: isMobile ? '100%' : 'auto' }}>
                     <Input.Search
                         placeholder="Filter by city"
                         onSearch={(val) => handleSearch(val, 'city')}
-                        style={{ width: 200 }}
+                        style={{ width: isMobile ? '100%' : 200 }}
                         allowClear
                     />
                     <Select
                         placeholder="Filter by Status"
-                        style={{ width: 150 }}
+                        style={{ width: isMobile ? '100%' : 150 }}
                         onChange={(val) => handleSearch(val, 'status')}
                         allowClear
                     >
@@ -182,20 +191,54 @@ const PropertiesPage = () => {
                     </Select>
                 </Space>
                 {canEdit && (
-                    <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => showModal()}
+                        block={isMobile}
+                    >
                         Add Property
                     </Button>
                 )}
             </div>
 
-            <Table
-                columns={columns}
-                dataSource={data}
-                rowKey="id"
-                pagination={pagination}
-                loading={loading}
-                onChange={handleTableChange}
-            />
+            {isMobile ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}>
+                    {data.map(item => (
+                        <Card
+                            key={item.id}
+                            cover={item.image_url ? <img alt="prop" src={item.image_url} style={{ height: 200, objectFit: 'cover' }} /> : null}
+                            actions={canEdit ? [
+                                <EditOutlined key="edit" onClick={() => showModal(item)} />,
+                                <DeleteOutlined key="delete" style={{ color: 'red' }} onClick={() => handleDelete(item.id)} />,
+                            ] : []}
+                        >
+                            <Card.Meta
+                                title={item.title}
+                                description={
+                                    <Space direction="vertical" size={0}>
+                                        <Text strong>${item.price?.toLocaleString()}</Text>
+                                        <Text type="secondary">{item.city}</Text>
+                                        <Tag color={item.status === 'Disponible' ? 'green' : item.status === 'Vendida' ? 'red' : 'gold'}>
+                                            {item.status}
+                                        </Tag>
+                                    </Space>
+                                }
+                            />
+                        </Card>
+                    ))}
+                    {data.length === 0 && !loading && <Card style={{ textAlign: 'center' }}>No properties found</Card>}
+                </div>
+            ) : (
+                <Table
+                    columns={columns}
+                    dataSource={data}
+                    rowKey="id"
+                    pagination={pagination}
+                    loading={loading}
+                    onChange={handleTableChange}
+                />
+            )}
 
             <Modal
                 title={editingProperty ? 'Edit Property' : 'Add Property'}
@@ -203,6 +246,7 @@ const PropertiesPage = () => {
                 onCancel={handleCancel}
                 footer={null}
                 destroyOnHidden
+                width={isMobile ? '95%' : 520}
             >
                 <PropertyForm
                     initialValues={editingProperty}
