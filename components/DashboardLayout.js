@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     DesktopOutlined,
     FileTextOutlined,
@@ -36,8 +36,16 @@ const items = [
 const DashboardLayout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const screens = useBreakpoint();
-    const isMobile = !screens.md;
+
+    // Ant Design's useBreakpoint returns an empty object during SSR.
+    // We use 'mounted' to ensure we only render mobile-specific UI on the client.
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const isMobile = mounted && !screens.md;
 
     const {
         token: { colorBgContainer, borderRadiusLG },
@@ -57,13 +65,32 @@ const DashboardLayout = ({ children }) => {
     };
 
     const handleMenuClick = (e) => {
-        if (e.key === '1') router.push('/dashboard');
         if (e.key === '6') router.push('/contacts');
-        if (e.key === '2') router.push('/properties');
-        if (e.key === '3') router.push('/leads');
-        if (e.key === '4') router.push('/pipeline');
+        else if (e.key === '2') router.push('/properties');
+        else if (e.key === '3') router.push('/leads');
+        else if (e.key === '4') router.push('/pipeline');
+        else router.push('/dashboard');
+
         setMobileMenuOpen(false);
     };
+
+    // Prevent rendering the responsive parts until mounted to avoid hydration mismatch
+    if (!mounted) {
+        return (
+            <Layout style={{ minHeight: '100vh' }}>
+                <Layout>
+                    <Header style={{ background: '#fff', padding: '0 24px' }}>
+                        <h3>RealEstate CRM</h3>
+                    </Header>
+                    <Content style={{ margin: '24px 16px' }}>
+                        <div style={{ padding: 24, background: '#fff', minHeight: 360 }}>
+                            {children}
+                        </div>
+                    </Content>
+                </Layout>
+            </Layout>
+        );
+    }
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -81,7 +108,7 @@ const DashboardLayout = ({ children }) => {
                 placement="left"
                 onClose={() => setMobileMenuOpen(false)}
                 open={mobileMenuOpen}
-                bodyStyle={{ padding: 0 }}
+                styles={{ body: { padding: 0 } }}
                 width={250}
             >
                 <Menu
