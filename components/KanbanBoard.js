@@ -17,7 +17,8 @@ import {
     arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card, Avatar, Tag, Typography } from 'antd';
+import { Card, Avatar, Tag, Typography, Grid } from 'antd';
+const { useBreakpoint } = Grid;
 import { UserOutlined } from '@ant-design/icons';
 import { OpportunityService } from '@/services/OpportunityService';
 import { DollarOutlined } from '@ant-design/icons';
@@ -226,7 +227,7 @@ const KanbanBoard = ({ initialItems }) => {
             </div>
             <DragOverlay>
                 {activeItem ? (
-                    <Card size="small" style={{ cursor: 'grabbing', transform: 'scale(1.05)', boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}>
+                    <Card size="small" style={{ cursor: 'grabbing', transform: 'scale(1.05)', boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }} styles={{ body: { padding: '8px' } }}>
                         <Card.Meta
                             avatar={<Avatar style={{ backgroundColor: '#87d068' }} icon={<DollarOutlined />} />}
                             title={<Text ellipsis>{activeItem.title}</Text>}
