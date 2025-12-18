@@ -1,122 +1,110 @@
-import { useState, useEffect } from 'react';
-import { Tag, Skeleton, Typography } from 'antd';
-import { HistoryOutlined } from '@ant-design/icons';
-import { AuditService } from '../services/AuditService';
+import React, { useEffect, useState } from 'react';
+import { Timeline, Typography, Tag, Card, Spin, Empty } from 'react-redux'; // Wait, standard Next.js project uses Ant Design directly
+import { AuditService } from '@/services/AuditService';
 import dayjs from 'dayjs';
+import {
+    EditOutlined,
+    PlusOutlined,
+    DeleteOutlined,
+    UserOutlined,
+    ClockCircleOutlined
+} from '@ant-design/icons';
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
-export default function AuditLogTab({ tableName, recordId }) {
+const AuditLogTab = ({ entityType, entityId }) => {
     const [logs, setLogs] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchLogs();
-    }, [recordId, tableName]);
-
-    const fetchLogs = async () => {
-        setLoading(true);
-        try {
-            const data = await AuditService.getLogs(tableName, recordId);
-            setLogs(data || []);
-        } catch (error) {
-            console.error('Error loading audit logs:', error);
-        } finally {
+        const fetchLogs = async () => {
+            setLoading(true);
+            const { data, error } = await AuditService.getLogs(entityType, entityId);
+            if (!error) {
+                setLogs(data);
+            }
             setLoading(false);
+        };
+
+        if (entityId) {
+            fetchLogs();
+        }
+    }, [entityType, entityId]);
+
+    const getActionIcon = (action) => {
+        switch (action) {
+            case 'INSERT': return <PlusOutlined style={{ color: 'green' }} />;
+            case 'UPDATE': return <EditOutlined style={{ color: 'blue' }} />;
+            case 'DELETE': return <DeleteOutlined style={{ color: 'red' }} />;
+            default: return <ClockCircleOutlined />;
         }
     };
 
-    const getChangesText = (log) => {
-        if (log.action === 'INSERT') return 'Created the record';
-        if (log.action === 'DELETE') return 'Deleted the record';
+    const getActionColor = (action) => {
+        switch (action) {
+            case 'INSERT': return 'green';
+            case 'UPDATE': return 'blue';
+            case 'DELETE': return 'red';
+            default: return 'gray';
+        }
+    };
 
-        // UPDATE: Compare old_data and new_data
-        if (!log.old_data || !log.new_data) return 'Updated record';
+    const formatDiff = (oldValues, newValues) => {
+        if (!oldValues) return <Text type="secondary">Record created</Text>;
 
         const changes = [];
-        const ignoreFields = ['updated_at', 'created_at', 'id', 'lead_id'];
+        const ignoredKeys = ['id', 'created_at', 'updated_at'];
 
-        const fieldLabels = {
-            property_id: 'Property',
-            assigned_user_id: 'Assigned Agent',
-            budget_max: 'Budget',
-            phone: 'Phone',
-            name: 'Name',
-            email: 'Email',
-            stage: 'Stage'
-        };
-
-        const formatValue = (key, value) => {
-            if (value === null || value === undefined) return 'Empty';
-
-            // Use lookup if available
-            if (log.lookups && log.lookups[key] && log.lookups[key][value]) {
-                return log.lookups[key][value];
-            }
-
-            // Currency formatting
-            if (key === 'budget_max' || key === 'budget') { // Handle both just in case
-                return `$${Number(value).toLocaleString()}`;
-            }
-
-            return String(value);
-        };
-
-        Object.keys(log.new_data).forEach(key => {
-            if (ignoreFields.includes(key)) return;
-            const oldVal = log.old_data[key];
-            const newVal = log.new_data[key];
-
-            if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+        Object.keys(newValues).forEach(key => {
+            if (!ignoredKeys.includes(key) && JSON.stringify(oldValues[key]) !== JSON.stringify(newValues[key])) {
                 changes.push(
-                    <div key={key}>
-                        <Text strong>{fieldLabels[key] || key}</Text>: <Text delete type="secondary">{formatValue(key, oldVal)}</Text> <Text>→</Text> <Text strong>{formatValue(key, newVal)}</Text>
+                    <div key={key} style={{ marginBottom: '4px' }}>
+                        <Text strong>{key}:</Text>
+                        <Text delete type="secondary" style={{ margin: '0 4px' }}>
+                            {oldValues[key] === null ? 'null' : String(oldValues[key])}
+                        </Text>
+                        →
+                        <Text style={{ marginLeft: '4px' }}>
+                            {newValues[key] === null ? 'null' : String(newValues[key])}
+                        </Text>
                     </div>
                 );
             }
         });
 
-        return changes.length > 0 ? changes : 'Updated record (no specific fields detected)';
+        return changes.length > 0 ? changes : <Text type="secondary">No significant fields changed</Text>;
     };
 
-    const getColor = (action) => {
-        switch (action) {
-            case 'INSERT': return 'green';
-            case 'UPDATE': return 'blue';
-            case 'DELETE': return 'red';
-            default: return 'default';
-        }
-    };
+    if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}><Spin tip="Loading history..." /></div>;
+
+    if (logs.length === 0) return <Empty description="No history found for this record." style={{ marginTop: 40 }} />;
 
     return (
-        <div style={{ marginTop: 20 }}>
-            {loading ? <Skeleton active /> : logs.length === 0 ? <div style={{ color: '#999' }}>No history found</div> : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    {logs.map(item => (
-                        <div key={item.id} style={{ display: 'flex', gap: 16, borderBottom: '1px solid #f0f0f0', paddingBottom: 16 }}>
-                            <div style={{ marginTop: 4 }}>
-                                <HistoryOutlined style={{ fontSize: 24, color: '#1890ff' }} />
+        <div style={{ padding: '20px 0' }}>
+            <Timeline mode="left">
+                {logs.map(log => (
+                    <Timeline.Item
+                        key={log.id}
+                        dot={getActionIcon(log.action)}
+                        label={dayjs(log.created_at).format('DD MMM YYYY HH:mm')}
+                    >
+                        <Card size="small" style={{ marginBottom: '10px' }}>
+                            <div style={{ marginBottom: '8px' }}>
+                                <Tag color={getActionColor(log.action)}>{log.action}</Tag>
+                                <Text strong style={{ marginLeft: 8 }}>
+                                    <UserOutlined style={{ marginRight: 4 }} />
+                                    {log.user?.name || 'Sistema / Desconocido'}
+                                </Text>
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                    <Tag color={getColor(item.action)}>{item.action}</Tag>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <div style={{ fontSize: '0.8em', color: '#999' }}>
-                                            {dayjs(item.created_at).format('MMM D, YYYY h:mm A')}
-                                        </div>
-                                        <div style={{ fontSize: '0.8em', color: '#999' }}>
-                                            {item.changed_by_user?.name || item.changed_by_user?.email || 'System'}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div style={{ marginTop: 8 }}>
-                                    {getChangesText(item)}
-                                </div>
+                            <div style={{ fontSize: '13px' }}>
+                                {formatDiff(log.old_values, log.new_values)}
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        </Card>
+                    </Timeline.Item>
+                ))}
+            </Timeline>
         </div>
     );
-}
+};
+
+export default AuditLogTab;

@@ -216,7 +216,7 @@ const LeadDetailsPage = () => { // We can rename this component internally to Op
                                 {
                                     key: '4',
                                     label: 'Historial',
-                                    children: <AuditLogTab tableName="opportunities" recordId={opportunity.id} />
+                                    children: <AuditLogTab entityType="opportunities" entityId={opportunity.id} />
                                 }
                             ]}
                         />
