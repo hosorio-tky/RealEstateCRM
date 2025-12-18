@@ -91,7 +91,7 @@ const ContactsPage = () => {
                     {/* <Button type="primary" icon={<UserAddOutlined />} onClick={handleAdd}>Add</Button> */}
                 </div>
             </div>
-            <Card bodyStyle={{ padding: 0 }}>
+            <Card styles={{ body: { padding: 0 } }}>
                 <Table
                     columns={columns}
                     dataSource={data}

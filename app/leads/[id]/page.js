@@ -5,13 +5,15 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { OpportunityService } from '@/services/OpportunityService';
 import { ActivityService } from '@/services/ActivityService';
 import ActivityForm from '@/components/ActivityForm';
-import { Spin, Card, Descriptions, Timeline, Button, Modal, Tag, message, Empty, Tabs, Space, Grid } from 'antd';
+import { Spin, Card, Descriptions, Timeline, Button, Modal, Tag, message, Empty, Tabs, Space, Grid, Typography } from 'antd';
 import { EditOutlined, PhoneOutlined, MailOutlined, CalendarOutlined, FileTextOutlined, CheckCircleOutlined, ClockCircleOutlined, MessageOutlined, CheckSquareOutlined, DeleteOutlined } from '@ant-design/icons';
 import NotesTab from '@/components/NotesTab';
 import AttachmentsTab from '@/components/AttachmentsTab';
 import AuditLogTab from '@/components/AuditLogTab';
 import OpportunityForm from '@/components/OpportunityForm';
 import dayjs from 'dayjs';
+
+const { Text } = Typography;
 
 const LeadDetailsPage = () => { // We can rename this component internally to OpportunityDetailsPage
     const params = useParams();
@@ -151,7 +153,7 @@ const LeadDetailsPage = () => { // We can rename this component internally to Op
                     <Card
                         title={<span style={{ fontSize: '1.1rem' }}>{opportunity.title}</span>}
                         extra={<Button icon={<EditOutlined />} onClick={() => setIsEditModalOpen(true)}>Editar</Button>}
-                        bodyStyle={{ padding: '16px' }}
+                        styles={{ body: { padding: '16px' } }}
                     >
                         <Descriptions
                             column={{ xxl: 4, xl: 3, lg: 3, md: 2, sm: 1, xs: 1 }}
@@ -169,7 +171,7 @@ const LeadDetailsPage = () => { // We can rename this component internally to Op
                 </div>
 
                 <div style={{ width: '100%' }}>
-                    <Card bodyStyle={{ padding: '12px' }}>
+                    <Card styles={{ body: { padding: '12px' } }}>
                         <Tabs
                             defaultActiveKey="1"
                             size="small"
@@ -197,7 +199,7 @@ const LeadDetailsPage = () => { // We can rename this component internally to Op
                                                                             {dayjs(act.scheduled_at).format('MMM D, h:mm A')}
                                                                         </span>
                                                                     </div>
-                                                                    <Space size={0}>
+                                                                    <Space orientation="horizontal" size={0}>
                                                                         <Button type="text" size="small" icon={<EditOutlined />} onClick={() => handleEditActivity(act)} />
                                                                         <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => handleDeleteActivity(act.id)} />
                                                                     </Space>

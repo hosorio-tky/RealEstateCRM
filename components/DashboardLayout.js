@@ -109,7 +109,7 @@ const DashboardLayout = ({ children }) => {
                 onClose={() => setMobileMenuOpen(false)}
                 open={mobileMenuOpen}
                 styles={{ body: { padding: 0 } }}
-                width={250}
+                style={{ width: 250 }}
             >
                 <Menu
                     mode="inline"

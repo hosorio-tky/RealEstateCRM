@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 
 const { Option } = Select;
+const { Text, Title } = Typography;
 
 const PropertiesPage = () => {
     const { user } = useAuth();
@@ -172,7 +173,7 @@ const PropertiesPage = () => {
                 justifyContent: 'space-between',
                 gap: '12px'
             }}>
-                <Space direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: isMobile ? '100%' : 'auto' }}>
+                <Space orientation={isMobile ? 'vertical' : 'horizontal'} style={{ width: isMobile ? '100%' : 'auto' }}>
                     <Input.Search
                         placeholder="Filter by city"
                         onSearch={(val) => handleSearch(val, 'city')}
@@ -212,11 +213,12 @@ const PropertiesPage = () => {
                                 <EditOutlined key="edit" onClick={() => showModal(item)} />,
                                 <DeleteOutlined key="delete" style={{ color: 'red' }} onClick={() => handleDelete(item.id)} />,
                             ] : []}
+                            styles={{ body: { padding: '16px' } }}
                         >
                             <Card.Meta
                                 title={item.title}
                                 description={
-                                    <Space direction="vertical" size={0}>
+                                    <Space orientation="vertical" size={0}>
                                         <Text strong>${item.price?.toLocaleString()}</Text>
                                         <Text type="secondary">{item.city}</Text>
                                         <Tag color={item.status === 'Disponible' ? 'green' : item.status === 'Vendida' ? 'red' : 'gold'}>
